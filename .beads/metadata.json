@@ -2,7 +2,7 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "server",
-  "dolt_database": "create_ts_project",
+  "dolt_database": "spinup_ts",
   "project_id": "d9824a1e-8ebb-4ff6-8260-c51dc6e489e6",
   "global_dolt_database": "beads_global"
 }
