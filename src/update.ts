@@ -91,7 +91,8 @@ async function applyCi(dir: string): Promise<void> {
 
 async function applyBeads(dir: string): Promise<void> {
   try {
-    await execAsync('bd init --skip-agents --non-interactive', { cwd: dir });
+    await execAsync('bd init --shared-server --skip-agents --non-interactive', { cwd: dir });
+    await execAsync('bd config set export.auto true', { cwd: dir });
   } catch {
     // bd not installed; skip silently
   }

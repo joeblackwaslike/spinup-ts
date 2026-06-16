@@ -111,7 +111,8 @@ async function installDependencies(
 
 async function initializeProjectTools(destDir: string, config: ProjectConfig): Promise<void> {
   try {
-    await execAsync('bd init --skip-agents --non-interactive', { cwd: destDir });
+    await execAsync('bd init --shared-server --skip-agents --non-interactive', { cwd: destDir });
+    await execAsync('bd config set export.auto true', { cwd: destDir });
     logStep('Initialized Beads task manager');
   } catch {
     // bd not installed; skip silently
