@@ -1,6 +1,6 @@
 # spinup-ts
 
-TypeScript project scaffolding CLI — the `cookiecutter-uv` equivalent for the TypeScript ecosystem, and the sibling of [`spinup-py`](https://github.com/joeblackwaslike/spinup-py). The two CLIs share one schema (`spinup-ts` ⇄ `spinup-py`): keep them symmetric.
+TypeScript project scaffolding CLI — the TypeScript sibling of [`spinup-py`](https://github.com/joeblackwaslike/spinup-py). The two CLIs share one schema (`spinup-ts` ⇄ `spinup-py`): keep them symmetric.
 
 ## Commands
 
