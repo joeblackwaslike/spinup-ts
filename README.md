@@ -1,12 +1,5 @@
 # spinup-ts
 
-[![CI](https://github.com/joeblackwaslike/spinup-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/joeblackwaslike/spinup-ts/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/spinup-ts?color=3fb950&label=npm)](https://www.npmjs.com/package/spinup-ts)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Discord](https://img.shields.io/discord/1486035859747897414?logo=discord&label=Discord&color=5865F2)](https://discord.gg/Fjc9zYHZyV)
-
-> Start a TypeScript project that already passes review.
-
 Scaffold a production-ready TypeScript project with opinionated tooling — the TypeScript sibling of [spinup-py](https://github.com/joeblackwaslike/spinup-py).
 
 `spinup-ts` ⇄ `spinup-py` share the same CLI schema, so remembering one gives you the other.
@@ -71,7 +64,7 @@ Non-interactive defaults resolve from `~/.spinup-tsrc.json`, then local `git con
 - **Description** — one-liner
 - **Author / Email / GitHub handle**
 - **Node version** — 20, 22, 23 (written to `.tool-versions` for mise/asdf)
-- **Toolchain** — pnpm for dependencies, Bun as the runtime (`bun`/`bunx`), all commands from the repo root
+- **Package manager** — pnpm (default), bun, npm
 - **Project type** — library, cli, server, mcp-server
 - **GitHub Actions** — CI + release workflows
 - **Publish to npm** — with provenance
