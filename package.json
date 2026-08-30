@@ -1,6 +1,6 @@
 {
   "name": "spinup-ts",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Scaffold a production-ready TypeScript project with opinionated tooling (Biome, ESLint strict, Vitest, Husky, GitHub Actions, Docusaurus, Docker, devcontainer). The TypeScript sibling of spinup-py.",
   "type": "module",
   "bin": {
