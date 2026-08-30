@@ -1,7 +1,7 @@
 {
   "name": "spinup-ts",
   "version": "0.1.0",
-  "description": "Scaffold and maintain production-ready TypeScript projects — the cookiecutter-uv equivalent for the TypeScript ecosystem, sibling of spinup-py",
+  "description": "Scaffold and maintain production-ready TypeScript projects — the TypeScript sibling of spinup-py",
   "author": {
     "name": "Joe Black",
     "email": "joeblackwaslike@gmail.com",

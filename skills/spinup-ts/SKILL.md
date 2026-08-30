@@ -13,7 +13,7 @@ description: >-
 
 # spinup-ts
 
-Scaffold and maintain production-ready TypeScript projects — the `cookiecutter-uv` equivalent for the TypeScript ecosystem.
+Scaffold and maintain production-ready TypeScript projects — the TypeScript sibling of [`spinup-py`](https://github.com/joeblackwaslike/spinup-py).
 
 ## What It Provides
 

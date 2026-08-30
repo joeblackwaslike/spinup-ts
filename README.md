@@ -7,7 +7,7 @@
 
 > Start a TypeScript project that already passes review.
 
-Scaffold a production-ready TypeScript project with opinionated tooling — the TypeScript sibling of [spinup-py](https://github.com/joeblackwaslike/spinup-py) and the TypeScript equivalent of [cookiecutter-uv](https://github.com/joeblackwaslike/cookiecutter-uv).
+Scaffold a production-ready TypeScript project with opinionated tooling — the TypeScript sibling of [spinup-py](https://github.com/joeblackwaslike/spinup-py).
 
 `spinup-ts` ⇄ `spinup-py` share the same CLI schema, so remembering one gives you the other.
 
@@ -50,7 +50,7 @@ Non-interactive defaults resolve from `~/.spinup-tsrc.json`, then local `git con
 
 ## What's Included
 
-| Python (cookiecutter-uv) | TypeScript equivalent |
+| Python ([spinup-py](https://github.com/joeblackwaslike/spinup-py)) | TypeScript equivalent |
 |---|---|
 | `uv` | `pnpm` |
 | `ruff` | `Biome` |
@@ -69,7 +69,7 @@ Non-interactive defaults resolve from `~/.spinup-tsrc.json`, then local `git con
 - **Project name** — kebab-case slug
 - **Description** — one-liner
 - **Author / Email / GitHub handle**
-- **Node version** — 20, 22, 23
+- **Node version** — 20, 22, 23 (written to `.tool-versions` for mise/asdf)
 - **Package manager** — pnpm (default), bun, npm
 - **Project type** — library, cli, server, mcp-server
 - **GitHub Actions** — CI + release workflows
