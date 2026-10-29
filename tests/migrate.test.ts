@@ -119,3 +119,18 @@ describe('migrateToolchain edge cases', () => {
     expect(report.manual.some((m) => m.includes('pnpm-workspace.yaml already exists'))).toBe(true);
   });
 });
+
+describe('package.json indentation', () => {
+  it('keeps tab indentation when migrating', async () => {
+    const dir = await fse.mkdtemp(path.join(os.tmpdir(), 'spinup-indent-'));
+    dirs.push(dir);
+    await fse.writeFile(
+      path.join(dir, 'package.json'),
+      '{\n\t"name": "tabbed",\n\t"scripts": {\n\t\t"test": "npm test"\n\t}\n}\n',
+    );
+    await migrateToolchain(dir, { install: false });
+    const raw = await fse.readFile(path.join(dir, 'package.json'), 'utf8');
+    expect(raw).toContain('\n\t"name"');
+    expect(raw).toContain('"test": "pnpm test"');
+  });
+});

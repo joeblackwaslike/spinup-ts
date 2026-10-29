@@ -59,6 +59,14 @@ interface PackageJson {
   [key: string]: unknown;
 }
 
+const INDENT_PATTERN = /^([\t ]+)"/m;
+
+export async function writeJsonKeepingIndent(file: string, data: unknown): Promise<void> {
+  const raw = await fs.readFile(file, 'utf8');
+  const spaces = INDENT_PATTERN.exec(raw)?.[1] ?? 2;
+  await fs.writeJson(file, data, { spaces });
+}
+
 export function rewriteCommands(text: string): string {
   let result = text;
   for (const [pattern, replacement] of COMMAND_REWRITES) {
@@ -152,7 +160,7 @@ async function migratePackageJson(dir: string, report: MigrationReport): Promise
   }
   migrateScripts(package_, report);
   await migrateWorkspace(dir, package_, report);
-  await fs.writeJson(file, package_, { spaces: 2 });
+  await writeJsonKeepingIndent(file, package_);
 }
 
 async function filesUnder(root: string): Promise<string[]> {

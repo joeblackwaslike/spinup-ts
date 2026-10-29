@@ -8,7 +8,7 @@ import * as clack from '@clack/prompts';
 import fs from 'fs-extra';
 
 // eslint-disable-next-line import-x/no-unresolved
-import { migrateToolchain, needsToolchainMigration } from './migrate.js';
+import { migrateToolchain, needsToolchainMigration, writeJsonKeepingIndent } from './migrate.js';
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -58,7 +58,7 @@ async function applyTsconfig(dir: string): Promise<void> {
     noUncheckedIndexedAccess: true,
     exactOptionalPropertyTypes: true,
   };
-  await fs.writeJson(tsconfigPath, tsconfig, { spaces: 2 });
+  await writeJsonKeepingIndent(tsconfigPath, tsconfig);
 }
 
 async function applyEslint(dir: string): Promise<void> {
@@ -86,7 +86,7 @@ async function applyHusky(dir: string): Promise<void> {
     ],
     '*.ts': ['eslint --fix --max-warnings=0 --no-warn-ignored'],
   };
-  await fs.writeJson(packagePath, packageJson, { spaces: 2 });
+  await writeJsonKeepingIndent(packagePath, packageJson);
 }
 
 async function applyCi(dir: string): Promise<void> {
