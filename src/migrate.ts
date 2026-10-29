@@ -231,7 +231,7 @@ async function collectManualReview(dir: string, report: MigrationReport): Promis
   }
 }
 
-const BUILD_PLACEHOLDER = /^(\s+)(['"]?)([^:'"\n]+)\2: set this to true or false$/gm;
+const BUILD_PLACEHOLDER_SUFFIX = ': set this to true or false';
 const TRUSTED_BUILDS = new Set([
   '@biomejs/biome',
   '@parcel/watcher',
@@ -251,16 +251,17 @@ async function resolveBuildPlaceholders(dir: string, report: MigrationReport): P
   const file = path.join(dir, WORKSPACE_FILE);
   if (!(await fs.pathExists(file))) return false;
   const original = await fs.readFile(file, 'utf8');
-  const next = original.replaceAll(
-    BUILD_PLACEHOLDER,
-    (_match, indent: string, quote: string, name: string) => {
-      const allowed = TRUSTED_BUILDS.has(name);
-      report.manual.push(
-        `${WORKSPACE_FILE}: allowBuilds ${name} set to ${allowed} -- confirm it needs a build script`,
-      );
-      return `${indent}${quote}${name}${quote}: ${allowed}`;
-    },
-  );
+  const lines = original.split('\n').map((line) => {
+    if (!line.endsWith(BUILD_PLACEHOLDER_SUFFIX)) return line;
+    const key = line.slice(0, -BUILD_PLACEHOLDER_SUFFIX.length);
+    const name = key.trim().replaceAll(/^['"]|['"]$/g, '');
+    const allowed = TRUSTED_BUILDS.has(name);
+    report.manual.push(
+      `${WORKSPACE_FILE}: allowBuilds ${name} set to ${allowed} -- confirm it needs a build script`,
+    );
+    return `${key}: ${allowed}`;
+  });
+  const next = lines.join('\n');
   if (next === original) return false;
   await fs.writeFile(file, next, 'utf8');
   return true;
