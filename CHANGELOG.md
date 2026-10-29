@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.3.1...spinup-ts-v0.4.0) (2026-10-29)
+
+
+### Features
+
+* **update:** --only flag to restrict updates to a subset ([#13](https://github.com/joeblackwaslike/spinup-ts/issues/13)) ([ce16391](https://github.com/joeblackwaslike/spinup-ts/commit/ce16391304b7761fcb8bf74b8233b156256efd20))
+
 ## [0.3.1](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.3.0...spinup-ts-v0.3.1) (2026-10-29)
 
 
