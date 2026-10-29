@@ -18,6 +18,12 @@ const TEMPLATE_DIR = path.resolve(__dirname, '..', 'template');
 const PKG_FILENAME = 'package.json';
 const BIOME_FILENAME = 'biome.json';
 const ESLINT_FILENAME = 'eslint.config.mjs';
+const DEVCONTAINER_FILE = path.join('.devcontainer', 'devcontainer.json');
+const DEVCONTAINER_MARKERS = [
+  'ghcr.io/joeblackwaslike/devcontainer:latest',
+  '.bun/install/cache',
+  'initializeCommand',
+];
 
 interface UpdateOption {
   value: string;
@@ -98,6 +104,22 @@ async function applyToolchain(dir: string): Promise<void> {
   for (const line of report.manual) clack.log.warn(line);
 }
 
+async function applyDevcontainer(dir: string): Promise<void> {
+  const package_ = (await fs.readJson(path.join(dir, PKG_FILENAME))) as { name?: string };
+  const name = package_.name ?? path.basename(dir);
+  const template = await fs.readFile(path.join(TEMPLATE_DIR, DEVCONTAINER_FILE), 'utf8');
+  const target = path.join(dir, DEVCONTAINER_FILE);
+  await fs.ensureDir(path.dirname(target));
+  await fs.writeFile(target, template.replaceAll('__PROJECT_NAME__', name), 'utf8');
+}
+
+async function needsDevcontainer(targetDir: string): Promise<boolean> {
+  const target = path.join(targetDir, DEVCONTAINER_FILE);
+  if (!(await pathExists(target))) return true;
+  const current = await fs.readFile(target, 'utf8');
+  return !DEVCONTAINER_MARKERS.every((marker) => current.includes(marker));
+}
+
 async function applyBeads(dir: string): Promise<void> {
   try {
     await execAsync('bd init --shared-server --skip-agents --non-interactive', { cwd: dir });
@@ -169,6 +191,14 @@ async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]
       label: 'Migrate to pnpm + Bun',
       hint: 'npm/yarn -> pnpm, npx/tsx -> bunx/bun, drop old lockfiles + node_modules',
       apply: applyToolchain,
+    });
+
+  if (await needsDevcontainer(targetDir))
+    options.push({
+      value: 'devcontainer',
+      label: 'Sync devcontainer to the latest image config',
+      hint: 'pnpm + Bun image, bun/pnpm cache mounts (overwrites .devcontainer/devcontainer.json)',
+      apply: applyDevcontainer,
     });
 
   if (!(await pathExists(path.join(targetDir, BIOME_FILENAME))))

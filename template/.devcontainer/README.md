@@ -66,11 +66,7 @@ lock files haven't changed).
 
 | Signal file | Action |
 | --- | --- |
-| `pnpm-lock.yaml` | `pnpm install` |
-| `bun.lockb` | `bun install` |
-| `yarn.lock` | `yarn install` |
-| `package-lock.json` | `npm ci` |
-| `package.json` (no lock) | `npm install` |
+| `package.json` | `pnpm install` (always pnpm) |
 | `pyproject.toml` | `uv sync` |
 | `requirements.txt` | `uv pip install -r requirements.txt` |
 | `Cargo.toml` | `cargo fetch` |
@@ -100,7 +96,7 @@ It runs last, after all auto-detection. The `init-project.sh` CLI generates a st
 # .devcontainer/custom-setup.sh — project-specific hook
 
 # Install a project-specific CLI tool
-npm install -g @myorg/dev-tools
+bun add -g @myorg/dev-tools
 
 # Seed the local database on first attach
 psql -U postgres -c "CREATE DATABASE myapp;" 2>/dev/null || true

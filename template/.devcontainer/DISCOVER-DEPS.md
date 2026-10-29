@@ -12,11 +12,7 @@ Detection runs in this exact order. Within each language, the first matching fil
 
 | Signal file | Tool invoked | Notes |
 |---|---|---|
-| `pnpm-lock.yaml` | `pnpm install` | Respects workspace root |
-| `bun.lockb` | `bun install` | |
-| `yarn.lock` | `yarn install` | |
-| `package-lock.json` | `npm ci` | Strict reproducible install |
-| `package.json` (no lock) | `npm install` | Creates a lock file |
+| `package.json` | `pnpm install` | Always pnpm; hints at `bunx spinup-ts update . --yes` when there is no `pnpm-lock.yaml` |
 | `pyproject.toml` | `uv sync` | Falls back silently if uv fails |
 | `requirements.txt` | `uv pip install -r` | Falls back to pip if uv unavailable |
 | `Cargo.toml` | `cargo fetch` | Pre-fetches crates; does not build |
@@ -43,7 +39,7 @@ devcontainer-init ~/github/myrepo   # target a specific directory
 ```bash
 #!/usr/bin/env bash
 # Install a project-specific global CLI
-npm install -g @myorg/internal-cli
+bun add -g @myorg/internal-cli
 
 # Seed the local Postgres database on first attach
 psql -U postgres -c "CREATE DATABASE myapp;" 2>/dev/null || true
@@ -99,7 +95,7 @@ Run `uv sync` manually to see the full error output.
 
 **Discovery is slow on every attach**
 
-Package managers like `pnpm install` and `npm ci` are fast when the lock file hasn't
+`pnpm install` is fast when the lock file hasn't
 changed (they skip work). If your repo is large and you want to skip it, set
 `DISCOVER_DEPS_SKIP=1` in `remoteEnv`.
 

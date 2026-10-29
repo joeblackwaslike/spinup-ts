@@ -170,6 +170,8 @@ Do not overwrite existing workflows unless they are clearly outdated (e.g., usin
 
 The canonical devcontainer config is maintained at `/Users/joe/github/joeblackwaslike/devcontainer/.devcontainer/devcontainer.json`. Read that file for the exact mounts, extensions, and remoteEnv to use.
 
+The fast path is `bunx spinup-ts update "$TARGET" --yes`, which rewrites `.devcontainer/devcontainer.json` from the template bundled with spinup-ts (the image config from the devcontainer repo's `src/claude-code` template: pnpm + Bun image, bun cache and pnpm store mounts, `NPM_TOKEN` passthrough, `initializeCommand`). It only does so when the file is missing or lacks those markers; review the result with `git diff`. Use the manual steps below when the project's devcontainer has customizations that must be kept.
+
 ### Detect State
 
 ```bash
