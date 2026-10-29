@@ -178,15 +178,46 @@ async function listTextFiles(dir: string): Promise<string[]> {
   return [...named.filter((_, index) => existing[index]), ...nested.flat()];
 }
 
-const SETUP_PNPM_STEP = /^([ \t]*)- (?:name: .*\n[ \t]*)?uses: pnpm\/action-setup/m;
+const LOOKBEHIND_CHARS = 400;
+const SETUP_NODE_STEP = /^([ \t]*)- (?:name: [^\n]*\n[ \t]*)?uses: actions\/setup-node/gm;
+const SETUP_PNPM_STEP = /^([ \t]*)- (?:name: [^\n]*\n[ \t]*)?uses: pnpm\/action-setup/gm;
+
+function insertBeforeEach(
+  text: string,
+  pattern: RegExp,
+  marker: string,
+  step: (indent: string) => string,
+): string {
+  let result = '';
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    const before = text.slice(Math.max(0, match.index - LOOKBEHIND_CHARS), match.index);
+    result += text.slice(last, match.index);
+    if (!before.includes(marker)) result += step(match[1] ?? '');
+    last = match.index;
+  }
+  return result + text.slice(last);
+}
+
+export function addSetupPnpm(text: string): string {
+  if (!/\bpnpm\b/.test(text)) return text;
+  const withSetup = insertBeforeEach(
+    text,
+    SETUP_NODE_STEP,
+    'pnpm/action-setup',
+    (indent) => `${indent}- uses: pnpm/action-setup@v4\n\n`,
+  );
+  return withSetup.replaceAll(/^( *cache: )npm$/gm, '$1pnpm');
+}
 
 export function addSetupBun(text: string): string {
-  if (text.includes('oven-sh/setup-bun')) return text;
-  const match = SETUP_PNPM_STEP.exec(text);
-  if (!match) return text;
-  const indent = match[1] ?? '';
-  const step = `${indent}- uses: oven-sh/setup-bun@v2\n${indent}  with:\n${indent}    bun-version-file: ${BUN_VERSION_FILE}\n\n`;
-  return text.slice(0, match.index) + step + text.slice(match.index);
+  return insertBeforeEach(
+    text,
+    SETUP_PNPM_STEP,
+    'oven-sh/setup-bun',
+    (indent) =>
+      `${indent}- uses: oven-sh/setup-bun@v2\n${indent}  with:\n${indent}    bun-version-file: ${BUN_VERSION_FILE}\n\n`,
+  );
 }
 
 async function migrateTextFiles(dir: string, report: MigrationReport): Promise<void> {
@@ -194,7 +225,7 @@ async function migrateTextFiles(dir: string, report: MigrationReport): Promise<v
     const original = await fs.readFile(file, 'utf8');
     let next = rewriteCommands(original);
     if (file.includes(`${path.sep}.github${path.sep}`) && /\.ya?ml$/.test(file)) {
-      next = addSetupBun(next);
+      next = addSetupBun(addSetupPnpm(next));
     }
     if (next !== original) {
       await fs.writeFile(file, next, 'utf8');

@@ -4,6 +4,7 @@ import fse from 'fs-extra';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   addSetupBun,
+  addSetupPnpm,
   migrateToolchain,
   needsToolchainMigration,
   rewriteCommands,
@@ -69,6 +70,31 @@ describe('addSetupBun', () => {
     expect(once).toContain('oven-sh/setup-bun@v2');
     expect(once.indexOf('setup-bun')).toBeLessThan(once.indexOf('Setup pnpm'));
     expect(addSetupBun(once)).toBe(once);
+  });
+});
+
+describe('addSetupPnpm', () => {
+  it('adds pnpm before every setup-node, switches the cache, and chains with setup-bun', () => {
+    const yaml = [
+      'jobs:',
+      '  a:',
+      '    steps:',
+      '      - uses: actions/checkout@v4',
+      '      - uses: actions/setup-node@v4',
+      '        with:',
+      '          cache: npm',
+      '      - run: pnpm install --frozen-lockfile',
+      '  b:',
+      '    steps:',
+      '      - uses: actions/setup-node@v4',
+      '      - run: pnpm test',
+      '',
+    ].join('\n');
+    const out = addSetupBun(addSetupPnpm(yaml));
+    expect(out.match(/pnpm\/action-setup@v4/g)).toHaveLength(2);
+    expect(out.match(/oven-sh\/setup-bun@v2/g)).toHaveLength(2);
+    expect(out).toContain('cache: pnpm');
+    expect(addSetupBun(addSetupPnpm(out))).toBe(out);
   });
 });
 
