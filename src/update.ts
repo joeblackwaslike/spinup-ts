@@ -269,6 +269,19 @@ async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]
 
 export interface UpdateOptions {
   nonInteractive?: boolean;
+  only?: string[] | undefined;
+}
+
+function restrictToOnly<T extends { value: string }>(available: T[], only?: string[]): T[] {
+  if (!only || only.length === 0) return available;
+  const known = new Set(available.map((o) => o.value));
+  const unknown = only.filter((id) => !known.has(id));
+  if (unknown.length > 0 && unknown.length === only.length) {
+    clack.log.warn(
+      `--only: nothing to apply for ${unknown.join(', ')} (already up to date or unknown id)`,
+    );
+  }
+  return available.filter((o) => only.includes(o.value));
 }
 
 export async function updateProject(targetDir: string, options: UpdateOptions = {}): Promise<void> {
@@ -281,7 +294,7 @@ export async function updateProject(targetDir: string, options: UpdateOptions = 
 
   clack.intro('spinup-ts update');
 
-  const available = await detectAvailableUpdates(targetDir);
+  const available = restrictToOnly(await detectAvailableUpdates(targetDir), options.only);
 
   if (available.length === 0) {
     clack.outro('Nothing to update — your project is already up to date!');

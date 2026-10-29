@@ -37,3 +37,19 @@ describe('updateProject --yes', () => {
     expect(devcontainer).not.toContain('__PROJECT_NAME__');
   });
 });
+
+describe('updateProject --only', () => {
+  it('applies only the requested updates', async () => {
+    vi.stubEnv('SPINUP_TS_SKIP_INSTALL', '1');
+    const dir = await fse.mkdtemp(path.join(os.tmpdir(), 'spinup-only-'));
+    dirs.push(dir);
+    await fse.writeJson(path.join(dir, 'package.json'), { name: 'only-app', scripts: {} });
+
+    await updateProject(dir, { nonInteractive: true, only: ['devcontainer'] });
+
+    expect(await fse.pathExists(path.join(dir, '.devcontainer', 'devcontainer.json'))).toBe(true);
+    expect(await fse.pathExists(path.join(dir, 'eslint.config.mjs'))).toBe(false);
+    expect(await fse.pathExists(path.join(dir, '.husky'))).toBe(false);
+    expect(await fse.pathExists(path.join(dir, 'pnpm-workspace.yaml'))).toBe(false);
+  });
+});

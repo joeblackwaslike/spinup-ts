@@ -23,6 +23,8 @@ Usage:
 Options:
   -y, --yes, --non-interactive       Scaffold with defaults only, no prompts (needs <project-name>);
                                      with update, apply every available update without prompting
+      --only=<ids>                   With update, restrict to a comma-separated set of updates
+                                     (toolchain,devcontainer,biome,tsconfig,eslint,husky,ci,vscode,beads,serena)
   -v, --version                      Print version
   -h, --help                         Show this help
 
@@ -39,6 +41,7 @@ interface ParsedArgs {
   name?: string | undefined;
   dir?: string | undefined;
   nonInteractive: boolean;
+  only?: string[] | undefined;
   help: boolean;
   version: boolean;
 }
@@ -49,6 +52,12 @@ function parseArgs(argv: string[]): ParsedArgs {
   const nonInteractive =
     argv.includes('--non-interactive') || argv.includes('--yes') || argv.includes('-y');
   const updateFlag = argv.includes('--update') || argv.includes('-u');
+  const onlyArgument = argv.find((a) => a.startsWith('--only='));
+  const only = onlyArgument
+    ?.slice('--only='.length)
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
   const positionals = argv.filter((a) => !a.startsWith('-'));
 
   // Subcommand form: `new <name>` / `update [dir]`
@@ -56,12 +65,12 @@ function parseArgs(argv: string[]): ParsedArgs {
     return { command: 'new', name: positionals[1], nonInteractive, help, version };
   }
   if (positionals[0] === 'update') {
-    return { command: 'update', dir: positionals[1], nonInteractive, help, version };
+    return { command: 'update', dir: positionals[1], nonInteractive, only, help, version };
   }
 
   // Flag form: `--update [dir]`
   if (updateFlag) {
-    return { command: 'update', dir: positionals[0], nonInteractive, help, version };
+    return { command: 'update', dir: positionals[0], nonInteractive, only, help, version };
   }
 
   // Bare form: `spinup-ts <name>`
@@ -86,8 +95,12 @@ async function runCreate(projectName: string | undefined, nonInteractive: boolea
   clack.outro(`Project created at ${destDir}`);
 }
 
-async function runUpdate(targetDir: string, nonInteractive: boolean): Promise<void> {
-  await updateProject(path.resolve(targetDir), { nonInteractive });
+async function runUpdate(
+  targetDir: string,
+  nonInteractive: boolean,
+  only?: string[],
+): Promise<void> {
+  await updateProject(path.resolve(targetDir), { nonInteractive, only });
 }
 
 async function main(): Promise<void> {
@@ -104,7 +117,7 @@ async function main(): Promise<void> {
   }
 
   if (args.command === 'update') {
-    await runUpdate(args.dir ?? '.', args.nonInteractive);
+    await runUpdate(args.dir ?? '.', args.nonInteractive, args.only);
     return;
   }
 
