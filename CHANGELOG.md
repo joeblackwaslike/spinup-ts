@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.3.0...spinup-ts-v0.3.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **ci:** exclude release-please-managed files from biome ([#10](https://github.com/joeblackwaslike/spinup-ts/issues/10)) ([41edc7c](https://github.com/joeblackwaslike/spinup-ts/commit/41edc7c012cddeafe4113077ef61a1137979546f))
+* **migrate:** keep npm publish, map --workspace to --filter, resolve allowBuilds placeholders ([#12](https://github.com/joeblackwaslike/spinup-ts/issues/12)) ([f7a3a9d](https://github.com/joeblackwaslike/spinup-ts/commit/f7a3a9d5290bd53cea5b36850fa71f81f4bc04df))
+
 ## [0.3.0](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.2.1...spinup-ts-v0.3.0) (2026-10-29)
 
 
