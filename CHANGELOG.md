@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.0...spinup-ts-v0.4.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **migrate:** pnpm import the old lockfile so resolved versions carry over ([#15](https://github.com/joeblackwaslike/spinup-ts/issues/15)) ([82fb3a6](https://github.com/joeblackwaslike/spinup-ts/commit/82fb3a618c9d7cee6ee6d392b5171b14f17c1323))
+
 ## [0.4.0](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.3.1...spinup-ts-v0.4.0) (2026-10-29)
 
 
