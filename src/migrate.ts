@@ -283,6 +283,22 @@ async function installDependencies(dir: string, report: MigrationReport): Promis
   report.changes.push('pnpm install (generated pnpm-lock.yaml)');
 }
 
+const IMPORTABLE_LOCKFILES = ['package-lock.json', 'npm-shrinkwrap.json', 'yarn.lock'];
+
+async function importExistingLockfile(dir: string, report: MigrationReport): Promise<void> {
+  if (await fs.pathExists(path.join(dir, 'pnpm-lock.yaml'))) return;
+  const present = await Promise.all(
+    IMPORTABLE_LOCKFILES.map((name) => fs.pathExists(path.join(dir, name))),
+  );
+  if (!present.some(Boolean)) return;
+  try {
+    await execAsync('pnpm import', { cwd: dir });
+    report.changes.push('pnpm import (kept the resolved versions from the old lockfile)');
+  } catch {
+    report.manual.push('pnpm import failed -- versions were re-resolved; review the lockfile diff');
+  }
+}
+
 export async function migrateToolchain(
   dir: string,
   options: MigrateOptions = {},
@@ -291,12 +307,12 @@ export async function migrateToolchain(
   await migratePackageJson(dir, report);
   await migrateTextFiles(dir, report);
   await addBunVersion(dir, report);
+  const install = options.install ?? process.env.SPINUP_TS_SKIP_INSTALL !== '1';
+  if (install) await importExistingLockfile(dir, report);
   await removeForeign(dir, report);
   await collectManualReview(dir, report);
 
-  if (options.install ?? process.env.SPINUP_TS_SKIP_INSTALL !== '1') {
-    await installDependencies(dir, report);
-  }
+  if (install) await installDependencies(dir, report);
   return report;
 }
 
