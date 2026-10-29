@@ -31,8 +31,9 @@ const COMMAND_REWRITES: [RegExp, string][] = [
   [/\bnpx (?:-y |--yes )?tsx /g, 'bun '],
   [/\bnpx (?:-y |--yes )?/g, 'bunx '],
   [/\bnpm ci\b/g, 'pnpm install --frozen-lockfile'],
+  [/\bnpm run (\S+) (?:--workspace=|--workspace |-w )(\S+)/g, 'pnpm --filter $2 $1'],
   [/\bnpm run /g, 'pnpm '],
-  [/\bnpm (test|install|publish|exec)\b/g, 'pnpm $1'],
+  [/\bnpm (test|install|exec)\b(?! (?:-g|--global)\b)/g, 'pnpm $1'],
   [/\byarn run /g, 'pnpm '],
   [/\byarn (?=\S)/g, 'pnpm '],
   [/\btsx watch /g, 'bun --watch '],
@@ -230,6 +231,57 @@ async function collectManualReview(dir: string, report: MigrationReport): Promis
   }
 }
 
+const BUILD_PLACEHOLDER = /^(\s+)(['"]?)([^:'"\n]+)\2: set this to true or false$/gm;
+const TRUSTED_BUILDS = new Set([
+  '@biomejs/biome',
+  '@parcel/watcher',
+  '@swc/core',
+  'bufferutil',
+  'core-js',
+  'esbuild',
+  'fsevents',
+  'msgpackr-extract',
+  'sharp',
+  'unrs-resolver',
+  'utf-8-validate',
+  'workerd',
+]);
+
+async function resolveBuildPlaceholders(dir: string, report: MigrationReport): Promise<boolean> {
+  const file = path.join(dir, WORKSPACE_FILE);
+  if (!(await fs.pathExists(file))) return false;
+  const original = await fs.readFile(file, 'utf8');
+  const next = original.replaceAll(
+    BUILD_PLACEHOLDER,
+    (_match, indent: string, quote: string, name: string) => {
+      const allowed = TRUSTED_BUILDS.has(name);
+      report.manual.push(
+        `${WORKSPACE_FILE}: allowBuilds ${name} set to ${allowed} -- confirm it needs a build script`,
+      );
+      return `${indent}${quote}${name}${quote}: ${allowed}`;
+    },
+  );
+  if (next === original) return false;
+  await fs.writeFile(file, next, 'utf8');
+  return true;
+}
+
+async function installDependencies(dir: string, report: MigrationReport): Promise<void> {
+  try {
+    await execAsync('pnpm install', { cwd: dir });
+  } catch (error) {
+    const output = `${(error as { stdout?: string }).stdout ?? ''}${(error as { stderr?: string }).stderr ?? ''}`;
+    if (
+      !output.includes('ERR_PNPM_IGNORED_BUILDS') ||
+      !(await resolveBuildPlaceholders(dir, report))
+    ) {
+      throw error;
+    }
+    await execAsync('pnpm install', { cwd: dir });
+  }
+  report.changes.push('pnpm install (generated pnpm-lock.yaml)');
+}
+
 export async function migrateToolchain(
   dir: string,
   options: MigrateOptions = {},
@@ -242,8 +294,7 @@ export async function migrateToolchain(
   await collectManualReview(dir, report);
 
   if (options.install ?? process.env.SPINUP_TS_SKIP_INSTALL !== '1') {
-    await execAsync('pnpm install', { cwd: dir });
-    report.changes.push('pnpm install (generated pnpm-lock.yaml)');
+    await installDependencies(dir, report);
   }
   return report;
 }
