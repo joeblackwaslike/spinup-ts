@@ -46,6 +46,14 @@ describe('rewriteCommands', () => {
     expect(rewriteCommands('npm ci')).toBe('pnpm install --frozen-lockfile');
   });
 
+  it('leaves npm publish and global npm installs alone, and maps --workspace to --filter', () => {
+    expect(rewriteCommands('npm publish --provenance')).toBe('npm publish --provenance');
+    expect(rewriteCommands('npm install -g npm@latest')).toBe('npm install -g npm@latest');
+    expect(rewriteCommands('npm run build --workspace=dashboard')).toBe(
+      'pnpm --filter dashboard build',
+    );
+  });
+
   it('keeps yarn install and rewrites npx tsx to a single bun', () => {
     expect(rewriteCommands('yarn install --frozen-lockfile')).toBe(
       'pnpm install --frozen-lockfile',
