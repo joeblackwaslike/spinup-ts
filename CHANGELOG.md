@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.2.1...spinup-ts-v0.3.0) (2026-10-29)
+
+
+### Features
+
+* pnpm + Bun toolchain, update --yes toolchain migration, devcontainer sync ([#8](https://github.com/joeblackwaslike/spinup-ts/issues/8)) ([85ba07b](https://github.com/joeblackwaslike/spinup-ts/commit/85ba07bb749b3f9553d0a769a673097813ff5460))
+
 ## [0.2.1](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.2.0...spinup-ts-v0.2.1) (2026-08-30)
 
 

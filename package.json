@@ -1,12 +1,15 @@
 {
   "name": "spinup-ts",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Scaffold a production-ready TypeScript project with opinionated tooling (Biome, ESLint strict, Vitest, Husky, GitHub Actions, Docusaurus, Docker, devcontainer). The TypeScript sibling of spinup-py.",
   "type": "module",
   "bin": {
     "spinup-ts": "./dist/index.js"
   },
-  "files": ["dist", "template"],
+  "files": [
+    "dist",
+    "template"
+  ],
   "homepage": "https://github.com/joeblackwaslike/spinup-ts#readme",
   "repository": {
     "type": "git",
@@ -77,7 +80,9 @@
     "*.{ts,js,json,md}": [
       "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
     ],
-    "src/**/*.ts": ["eslint --fix --max-warnings=0 --no-warn-ignored"]
+    "src/**/*.ts": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored"
+    ]
   },
   "config": {
     "commitizen": {
