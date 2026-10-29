@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.1...spinup-ts-v0.4.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **migrate:** preserve existing JSON indentation ([#17](https://github.com/joeblackwaslike/spinup-ts/issues/17)) ([0e53803](https://github.com/joeblackwaslike/spinup-ts/commit/0e538031673ad9c1ba143b3e8e2c8138f614a31e))
+
 ## [0.4.1](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.0...spinup-ts-v0.4.1) (2026-10-29)
 
 
