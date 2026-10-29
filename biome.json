@@ -50,6 +50,8 @@
   "files": {
     "ignore": [
       "node_modules",
+      "package.json",
+      "CHANGELOG.md",
       "dist",
       "coverage",
       "template",
