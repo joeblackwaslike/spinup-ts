@@ -4,14 +4,14 @@ __DESCRIPTION__
 
 ## Stack
 
-- **Language:** TypeScript (ESM, `pnpm` for dependency management)
+- **Language:** TypeScript (ESM). **pnpm** manages dependencies and the workspace; **Bun** is the runtime for scripts and the dev loop
 - **Tooling:** Biome + ESLint (lint/format), Vitest (tests), `tsc` (build), Docusaurus (docs)
-- **Runtime:** Node >= __NODE_VERSION__
+- **Runtime:** Bun (pinned in `.bun-version`); published output stays Node >= __NODE_VERSION__ compatible
 
 ## Commands
 
 ```sh
-pnpm dev             # watch-run src/index.ts (tsx)
+pnpm dev             # watch-run src/index.ts (bun --watch)
 pnpm build           # compile TypeScript -> dist/
 pnpm test            # run tests (vitest)
 pnpm test:coverage   # tests with coverage
@@ -25,6 +25,8 @@ pnpm check           # typecheck + lint
 ## Conventions
 
 - Tests live in `tests/`, mirroring `src/` structure
+- Use `pnpm`, `bun` and `bunx` only -- never `npm`, `npx`, `yarn` or `tsx`
+- Run every command from the repo root; never `cd` into a package (use `pnpm --filter <name> <script>`)
 - Use `pnpm add` to add dependencies, never hand-edit the `package.json` deps
 - ESM only (`"type": "module"`); target Node >= __NODE_VERSION__ (pinned in `.nvmrc` / `.tool-versions`)
 - Conventional Commits enforced by commitlint — run `pnpm commit` for a guided prompt

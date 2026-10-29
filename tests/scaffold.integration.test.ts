@@ -182,10 +182,12 @@ describe('scaffold integration', () => {
       expect(pkg).not.toHaveProperty('__lint-staged__');
     });
 
-    it('omits packageManager field for npm', async () => {
-      const dir = await scaffoldToTemp({ ...baseConfig, packageManager: 'npm' });
+    it('ships Bun runtime files and no tsx', async () => {
+      const dir = await scaffoldToTemp({ ...baseConfig });
       const pkg = await fse.readJson(path.join(dir, 'package.json'));
-      expect(pkg.packageManager).toBeUndefined();
+      expect(pkg.scripts.dev).toBe('bun --watch src/index.ts');
+      expect(pkg.devDependencies).not.toHaveProperty('tsx');
+      expect(await fse.pathExists(path.join(dir, '.bun-version'))).toBe(true);
     });
   });
 });

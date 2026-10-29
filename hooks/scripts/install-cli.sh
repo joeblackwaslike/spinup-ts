@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto-installs the spinup-ts CLI via npm link if it isn't already on PATH.
+# Auto-installs the spinup-ts CLI via pnpm link --global if it isn't already on PATH.
 # Runs as a SessionStart hook — must exit cleanly and output valid JSON.
 
 set -euo pipefail
@@ -25,10 +25,10 @@ if [[ ! -f "dist/index.js" ]]; then
 fi
 
 # Link — suppress noise, don't fail the session if this errors
-npm link --silent 2>/dev/null || true
+pnpm link --global --silent 2>/dev/null || true
 
 if command -v spinup-ts &>/dev/null; then
-  echo '{"continue":true,"suppressOutput":false,"status":"spinup-ts CLI installed via npm link"}'
+  echo '{"continue":true,"suppressOutput":false,"status":"spinup-ts CLI installed via pnpm link --global"}'
 else
   echo '{"continue":true,"suppressOutput":true}'
 fi

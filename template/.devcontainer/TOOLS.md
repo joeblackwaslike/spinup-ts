@@ -71,13 +71,11 @@ Version specs use `latest:N` to pin major while tracking minor/patch updates.
 | golang | `latest:1` | `go` | Go 1.x |
 | rust | `stable` | `cargo`, `rustc`, `rustup` | Stable toolchain |
 | bun | `latest:1` | `bun`, `bunx` | JS runtime / bundler |
-| pnpm | `latest:10` | `pnpm`, `pnpx` | pnpm 10.x |
 | deno | `latest` | `deno` | Deno runtime |
 | awscli | `latest:2` | `aws` | AWS CLI v2 |
 | gcloud | `latest` | `gcloud`, `gsutil` | Google Cloud SDK |
 | pipx | `latest:1` | `pipx` | Python CLI tool isolation |
 | supabase-cli | `latest` | `supabase` | Supabase management CLI |
-| yarn | `latest` | `yarn` | Yarn package manager |
 | jq | `latest` | `jq` | JSON processor (asdf version shadows apt) |
 | yq | `latest` | `yq` | YAML/JSON processor |
 | just | `latest` | `just` | Command runner (Justfile) |
@@ -92,8 +90,7 @@ To add a new asdf plugin: `asdf plugin add <name> && asdf install <name> latest 
 |---|---|---|
 | uv | `curl -LsSf https://astral.sh/uv/install.sh` → `/usr/local/bin` | Fast Python package/project manager |
 | pipx | asdf (listed above) | Isolated Python CLI tool environments |
-| pnpm | asdf (listed above) | Node package manager |
-| yarn | asdf (listed above) | Node package manager |
+| pnpm | `bun add -g pnpm@11` | Package manager (see JS globals) |
 | volta | `curl https://get.volta.sh` → `/usr/local/share/volta` | Supplemental JS toolchain for volta-pinned repos |
 
 ---
@@ -129,17 +126,16 @@ Installed with `GOPATH=/usr/local` → binaries land in `/usr/local/bin/`.
 
 ---
 
-## CLI tools — npm globals
+## CLI tools — JS globals (bun)
 
-Installed with `npm install -g` into the asdf-managed Node installation.
-After install, `asdf reshim nodejs` regenerates shims in `$ASDF_DATA_DIR/shims/`.
+Installed with `bun add -g` into `BUN_INSTALL=/usr/local/share/bun`. npm, npx, yarn and tsx are not used.
 
 | Package | Command | Purpose |
 |---|---|---|
 | `@anthropic-ai/claude-code` | `claude` | Claude Code CLI |
 | `@devcontainers/cli` | `devcontainer` | Dev Containers CLI |
 | `@google/gemini-cli` | `gemini` | Google Gemini CLI |
-| `tsx` | `tsx` | TypeScript execute (ts-node alternative) |
+| `pnpm@11` | `pnpm` | Package manager |
 
 ---
 
@@ -182,8 +178,8 @@ Theme configured in `.devcontainer/.mytheme.omp.yaml` (copied into the container
 
 | Tool | Source | Notes |
 |---|---|---|
-| claude (Claude Code) | npm: `@anthropic-ai/claude-code` | Alias `claude='claude --dangerously-skip-permissions'` set in .zshrc |
-| gemini-cli | npm: `@google/gemini-cli` | Google Gemini terminal agent |
+| claude (Claude Code) | bun: `@anthropic-ai/claude-code` | Alias `claude='claude --dangerously-skip-permissions'` set in .zshrc |
+| gemini-cli | bun: `@google/gemini-cli` | Google Gemini terminal agent |
 | beads (`bd`) | Go: `github.com/steveyegge/beads` | Task management for Claude Code |
 | gastown (`gt`) | Go: `github.com/gastownhall/gastown` | Multi-agent workspace orchestration; depends on dolt |
 | opencode | **not yet installed** | Binary not on npm; TODO: add GitHub release download when stable |

@@ -7,6 +7,9 @@ import { promisify } from 'node:util';
 import * as clack from '@clack/prompts';
 import fs from 'fs-extra';
 
+// eslint-disable-next-line import-x/no-unresolved
+import { migrateToolchain, needsToolchainMigration } from './migrate.js';
+
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +18,12 @@ const TEMPLATE_DIR = path.resolve(__dirname, '..', 'template');
 const PKG_FILENAME = 'package.json';
 const BIOME_FILENAME = 'biome.json';
 const ESLINT_FILENAME = 'eslint.config.mjs';
+const DEVCONTAINER_FILE = path.join('.devcontainer', 'devcontainer.json');
+const DEVCONTAINER_MARKERS = [
+  'ghcr.io/joeblackwaslike/devcontainer:latest',
+  '.bun/install/cache',
+  'initializeCommand',
+];
 
 interface UpdateOption {
   value: string;
@@ -89,6 +98,28 @@ async function applyCi(dir: string): Promise<void> {
   });
 }
 
+async function applyToolchain(dir: string): Promise<void> {
+  const report = await migrateToolchain(dir);
+  for (const line of report.changes) clack.log.step(line);
+  for (const line of report.manual) clack.log.warn(line);
+}
+
+async function applyDevcontainer(dir: string): Promise<void> {
+  const package_ = (await fs.readJson(path.join(dir, PKG_FILENAME))) as { name?: string };
+  const name = package_.name ?? path.basename(dir);
+  const template = await fs.readFile(path.join(TEMPLATE_DIR, DEVCONTAINER_FILE), 'utf8');
+  const target = path.join(dir, DEVCONTAINER_FILE);
+  await fs.ensureDir(path.dirname(target));
+  await fs.writeFile(target, template.replaceAll('__PROJECT_NAME__', name), 'utf8');
+}
+
+async function needsDevcontainer(targetDir: string): Promise<boolean> {
+  const target = path.join(targetDir, DEVCONTAINER_FILE);
+  if (!(await pathExists(target))) return true;
+  const current = await fs.readFile(target, 'utf8');
+  return !DEVCONTAINER_MARKERS.every((marker) => current.includes(marker));
+}
+
 async function applyBeads(dir: string): Promise<void> {
   try {
     await execAsync('bd init --shared-server --skip-agents --non-interactive', { cwd: dir });
@@ -153,6 +184,22 @@ async function needsHusky(targetDir: string): Promise<boolean> {
 
 async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]> {
   const options: UpdateOption[] = [];
+
+  if (await needsToolchainMigration(targetDir))
+    options.push({
+      value: 'toolchain',
+      label: 'Migrate to pnpm + Bun',
+      hint: 'npm/yarn -> pnpm, npx/tsx -> bunx/bun, drop old lockfiles + node_modules',
+      apply: applyToolchain,
+    });
+
+  if (await needsDevcontainer(targetDir))
+    options.push({
+      value: 'devcontainer',
+      label: 'Sync devcontainer to the latest image config',
+      hint: 'pnpm + Bun image, bun/pnpm cache mounts (overwrites .devcontainer/devcontainer.json)',
+      apply: applyDevcontainer,
+    });
 
   if (!(await pathExists(path.join(targetDir, BIOME_FILENAME))))
     options.push({
@@ -220,7 +267,11 @@ async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]
   return options;
 }
 
-export async function updateProject(targetDir: string): Promise<void> {
+export interface UpdateOptions {
+  nonInteractive?: boolean;
+}
+
+export async function updateProject(targetDir: string, options: UpdateOptions = {}): Promise<void> {
   if (!(await pathExists(targetDir))) {
     throw new Error(`Target directory does not exist: ${targetDir}`);
   }
@@ -237,13 +288,15 @@ export async function updateProject(targetDir: string): Promise<void> {
     return;
   }
 
-  const selected = await clack.multiselect<string>({
-    message: 'Select updates to apply:',
-    options: available.map(({ value, label, hint }) =>
-      hint ? { value, label, hint } : { value, label },
-    ),
-    required: false,
-  });
+  const selected = options.nonInteractive
+    ? available.map((o) => o.value)
+    : await clack.multiselect<string>({
+        message: 'Select updates to apply:',
+        options: available.map(({ value, label, hint }) =>
+          hint ? { value, label, hint } : { value, label },
+        ),
+        required: false,
+      });
 
   if (clack.isCancel(selected) || selected.length === 0) {
     clack.cancel('No updates applied.');

@@ -161,18 +161,6 @@ export async function runPrompts(projectName?: string): Promise<ProjectConfig> {
     }),
   );
 
-  const packageManager = unwrap(
-    await clack.select<'pnpm' | 'bun' | 'npm'>({
-      message: 'Package manager?',
-      initialValue: d.packageManager ?? 'pnpm',
-      options: [
-        { value: 'pnpm', label: 'pnpm', hint: 'recommended' },
-        { value: 'bun', label: 'bun' },
-        { value: 'npm', label: 'npm' },
-      ],
-    }),
-  );
-
   const projectType = unwrap(
     await clack.select<'library' | 'cli' | 'server' | 'mcp-server'>({
       message: 'Project type?',
@@ -251,7 +239,7 @@ export async function runPrompts(projectName?: string): Promise<ProjectConfig> {
     email,
     githubHandle,
     nodeVersion,
-    packageManager,
+    packageManager: 'pnpm',
     projectType,
     includeGithubActions,
     publishToNpm,
@@ -265,7 +253,7 @@ export async function runPrompts(projectName?: string): Promise<ProjectConfig> {
   clack.note(
     [
       `Project: ${config.projectName}`,
-      `Type: ${config.projectType}  ·  Node: ${config.nodeVersion}  ·  PM: ${config.packageManager}`,
+      `Type: ${config.projectType}  ·  Node: ${config.nodeVersion}  ·  pnpm + Bun`,
       `Features: ${summarizeFeatures(config)}`,
     ].join('\n'),
     'Summary',
@@ -314,7 +302,7 @@ export async function buildDefaultConfig(projectName: string): Promise<ProjectCo
     email: d.email ?? gitEmail ?? 'you@example.com',
     githubHandle: d.githubHandle ?? 'your-handle',
     nodeVersion: d.nodeVersion ?? '22',
-    packageManager: d.packageManager ?? 'pnpm',
+    packageManager: 'pnpm',
     projectType: d.projectType ?? 'library',
     includeGithubActions: d.includeGithubActions ?? true,
     publishToNpm: d.publishToNpm ?? false,

@@ -24,8 +24,6 @@ export async function transformPackageManager(
   destDir: string,
   config: ProjectConfig,
 ): Promise<void> {
-  if (config.packageManager === 'npm') return;
-
   const packagePath = path.join(destDir, 'package.json');
   if (!(await fse.pathExists(packagePath))) return;
 

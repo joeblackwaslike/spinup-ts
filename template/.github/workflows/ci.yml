@@ -44,6 +44,10 @@ jobs:
         with:
           version: latest
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:

@@ -11,10 +11,12 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx src/index.ts",
+    "dev": "bun --watch src/index.ts",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
@@ -48,7 +50,6 @@
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
-    "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
     "@docusaurus/core": "^3.8.0",
@@ -62,8 +63,12 @@
     "vitest": "^3.0.0"
   },
   "__lint-staged__": {
-    "*.{ts,js,json,md}": ["biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"],
-    "*.ts": ["eslint --fix --max-warnings=0 --no-warn-ignored"]
+    "*.{ts,js,json,md}": [
+      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+    ],
+    "*.ts": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored"
+    ]
   },
   "author": "__AUTHOR__ <__EMAIL__>",
   "license": "__LICENSE__",
@@ -79,10 +84,11 @@
       "path": "cz-conventional-changelog"
     }
   },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "core-js", "esbuild", "unrs-resolver"]
-  },
   "depcheck": {
-    "ignores": ["react", "react-dom", "@docusaurus/types"]
+    "ignores": [
+      "react",
+      "react-dom",
+      "@docusaurus/types"
+    ]
   }
 }

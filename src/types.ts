@@ -22,7 +22,11 @@ export const projectConfigSchema = z
     email: z.string().email(),
     githubHandle: z.string().min(1),
     nodeVersion: z.enum(['20', '22', '23']).default('22'),
-    packageManager: z.enum(['pnpm', 'bun', 'npm']).default('pnpm'),
+    // Legacy values are accepted for old configs but always resolve to pnpm.
+    packageManager: z
+      .enum(['pnpm', 'bun', 'npm'])
+      .default('pnpm')
+      .transform((): 'pnpm' => 'pnpm'),
     projectType: z.enum(['library', 'cli', 'server', 'mcp-server']).default('library'),
     includeGithubActions: z.boolean().default(true),
     publishToNpm: z.boolean().default(false),

@@ -21,7 +21,7 @@ Every scaffolded project gets an opinionated, pre-integrated stack:
 
 | Layer | Tool |
 |---|---|
-| Package manager | pnpm (default), bun, or npm |
+| Toolchain | pnpm (dependencies) + Bun (runtime); not configurable |
 | Formatter + linter | Biome + ESLint strict (unicorn, sonarjs, import-x) |
 | Type checker | tsc `--noEmit` with `strictTypeChecked` |
 | Test runner | Vitest + `@vitest/coverage-v8` |
@@ -41,16 +41,16 @@ Every scaffolded project gets an opinionated, pre-integrated stack:
 git clone https://github.com/joeblackwaslike/spinup-ts
 cd spinup-ts
 pnpm install && pnpm build
-npm link   # makes `spinup-ts` available globally
+pnpm link --global   # makes `spinup-ts` available globally
 ```
 
-After any folder move, re-run `npm link` — the symlink stores the absolute path.
+After any folder move, re-run `pnpm link --global` — the symlink stores the absolute path.
 
 ### Run via Package Manager (no install)
 
 ```bash
 pnpm dlx spinup-ts my-project
-npx spinup-ts my-project
+bunx spinup-ts my-project
 ```
 
 ## Creating a New Project
@@ -69,7 +69,7 @@ The CLI walks through prompts in sequence:
 4. **Author email**
 5. **GitHub handle** — used to build repo URLs, badge links
 6. **Node version** — 20 | 22 (LTS ✓) | 23
-7. **Package manager** — pnpm (recommended) | bun | npm
+7. **Toolchain** — fixed: pnpm + Bun (no prompt)
 8. **Project type** — library | cli | server | mcp-server
 9. **Include GitHub Actions?** — yes/no
 10. **Publish to npm?** — yes/no
@@ -154,7 +154,7 @@ The CLI will present prompts with the RC values pre-filled. Accept each with `En
 cd my-project
 git init && git add -A && git commit -m "chore: initial scaffold"
 gh repo create joeblackwaslike/my-project --public --source=. --remote=origin --push
-npm link   # if this is a CLI or tool being developed
+pnpm link --global   # if this is a CLI or tool being developed
 ```
 
 ## Updating an Existing Project

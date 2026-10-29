@@ -61,6 +61,7 @@ Show a table:
 
 | Phase | Scope | Status |
 |---|---|---|
+| 0 — Toolchain | pnpm + Bun migration (lockfiles, scripts, CI, docs, node_modules) | legacy / up-to-date |
 | A — Tooling | Biome, ESLint strict, tsconfig, Husky, CI | missing / outdated / up-to-date |
 | B — Devcontainer | Migrate local-build → image, or add fresh | <state from discovery> |
 | C — Docs | Docusaurus setup / migration / generation | absent / raw markdown / partial / up-to-date |
@@ -72,6 +73,27 @@ Ask:
 > Run all phases? (yes / select phases to skip)
 
 If a phase appears up-to-date, confirm before re-running it.
+
+---
+
+## Phase 0 — Toolchain (pnpm + Bun)
+
+Run this first. It is the one-command path for bringing an older spinup-ts project (or any npm/yarn project) onto the current standard: **pnpm** for dependencies, **Bun** as the runtime (`bun`, `bunx`), every command run from the repo root.
+
+```bash
+bunx spinup-ts update "$TARGET" --yes
+```
+
+`--yes` applies every available update without prompting, which is the right mode for agents and scripts. To run only this phase interactively, run `bunx spinup-ts update "$TARGET"` and select **Migrate to pnpm + Bun**.
+
+What the migration does:
+
+- Sets `packageManager` to the installed pnpm; creates `pnpm-workspace.yaml` from `workspaces` / `onlyBuiltDependencies` (`allowBuilds`) and drops those fields from `package.json`
+- Rewrites `npx` -> `bunx`, `npm run`/`yarn` -> `pnpm`, `npm ci` -> `pnpm install --frozen-lockfile`, `tsx` -> `bun` in `package.json` scripts, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `justfile`, `.husky/*` and `.github/**`; removes the `tsx` devDependency
+- Pins Bun in `.bun-version` and adds `oven-sh/setup-bun@v2` before the pnpm setup step in CI workflows
+- Deletes `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `.yarn/`, `.pnp.*`, `bun.lock*`, `.pnpm-store` and `node_modules`, then runs `pnpm install` to generate `pnpm-lock.yaml`
+
+Report any "review" warnings (README, Dockerfile, docs still mentioning npm/npx/yarn) to the user; those are not rewritten automatically because published install instructions for consumers may legitimately mention npm.
 
 ---
 
@@ -114,13 +136,13 @@ Ensure these strict flags are set; add any that are missing without touching exi
 If `.husky/` is absent:
 
 ```bash
-cd "$TARGET" && npx husky init
+cd "$TARGET" && bunx husky init
 ```
 
 Write `.husky/pre-commit`:
 
 ```sh
-npx lint-staged
+pnpm lint-staged
 ```
 
 If `lint-staged` is not in `package.json`, add to the `package.json` root:
@@ -147,6 +169,8 @@ Do not overwrite existing workflows unless they are clearly outdated (e.g., usin
 ## Phase B — Devcontainer
 
 The canonical devcontainer config is maintained at `/Users/joe/github/joeblackwaslike/devcontainer/.devcontainer/devcontainer.json`. Read that file for the exact mounts, extensions, and remoteEnv to use.
+
+The fast path is `bunx spinup-ts update "$TARGET" --yes`, which rewrites `.devcontainer/devcontainer.json` from the template bundled with spinup-ts (the image config from the devcontainer repo's `src/claude-code` template: pnpm + Bun image, bun cache and pnpm store mounts, `NPM_TOKEN` passthrough, `initializeCommand`). It only does so when the file is missing or lacks those markers; review the result with `git diff`. Use the manual steps below when the project's devcontainer has customizations that must be kept.
 
 ### Detect State
 

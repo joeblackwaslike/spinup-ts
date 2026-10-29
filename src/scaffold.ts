@@ -16,11 +16,7 @@ const execAsync = promisify(exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEGIT_SOURCE = 'joeblackwaslike/spinup-ts/template';
-const INSTALL_COMMANDS: Record<ProjectConfig['packageManager'], string> = {
-  pnpm: 'pnpm install',
-  bun: 'bun install',
-  npm: 'npm install',
-};
+const INSTALL_COMMAND = 'pnpm install';
 
 const logStep = (message: string): void => {
   // biome-ignore lint/suspicious/noConsole: intentional CLI output
@@ -102,11 +98,8 @@ async function initGit(destDir: string): Promise<void> {
   );
 }
 
-async function installDependencies(
-  destDir: string,
-  packageManager: ProjectConfig['packageManager'],
-): Promise<void> {
-  await execAsync(INSTALL_COMMANDS[packageManager], { cwd: destDir });
+async function installDependencies(destDir: string): Promise<void> {
+  await execAsync(INSTALL_COMMAND, { cwd: destDir });
 }
 
 async function initializeProjectTools(destDir: string, config: ProjectConfig): Promise<void> {
@@ -142,7 +135,7 @@ export async function scaffold(destDir: string, config: ProjectConfig): Promise<
   if (process.env.SPINUP_TS_SKIP_INSTALL === '1') {
     logStep('Skipping dependency install (SPINUP_TS_SKIP_INSTALL=1)');
   } else {
-    await installDependencies(destDir, config.packageManager);
+    await installDependencies(destDir);
     logStep('Installing dependencies...');
   }
   await initializeProjectTools(destDir, config);
