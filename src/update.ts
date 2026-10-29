@@ -7,6 +7,9 @@ import { promisify } from 'node:util';
 import * as clack from '@clack/prompts';
 import fs from 'fs-extra';
 
+// eslint-disable-next-line import-x/no-unresolved
+import { migrateToolchain, needsToolchainMigration } from './migrate.js';
+
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,6 +92,12 @@ async function applyCi(dir: string): Promise<void> {
   });
 }
 
+async function applyToolchain(dir: string): Promise<void> {
+  const report = await migrateToolchain(dir);
+  for (const line of report.changes) clack.log.step(line);
+  for (const line of report.manual) clack.log.warn(line);
+}
+
 async function applyBeads(dir: string): Promise<void> {
   try {
     await execAsync('bd init --shared-server --skip-agents --non-interactive', { cwd: dir });
@@ -153,6 +162,14 @@ async function needsHusky(targetDir: string): Promise<boolean> {
 
 async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]> {
   const options: UpdateOption[] = [];
+
+  if (await needsToolchainMigration(targetDir))
+    options.push({
+      value: 'toolchain',
+      label: 'Migrate to pnpm + Bun',
+      hint: 'npm/yarn -> pnpm, npx/tsx -> bunx/bun, drop old lockfiles + node_modules',
+      apply: applyToolchain,
+    });
 
   if (!(await pathExists(path.join(targetDir, BIOME_FILENAME))))
     options.push({
@@ -220,7 +237,11 @@ async function detectAvailableUpdates(targetDir: string): Promise<UpdateOption[]
   return options;
 }
 
-export async function updateProject(targetDir: string): Promise<void> {
+export interface UpdateOptions {
+  nonInteractive?: boolean;
+}
+
+export async function updateProject(targetDir: string, options: UpdateOptions = {}): Promise<void> {
   if (!(await pathExists(targetDir))) {
     throw new Error(`Target directory does not exist: ${targetDir}`);
   }
@@ -237,13 +258,15 @@ export async function updateProject(targetDir: string): Promise<void> {
     return;
   }
 
-  const selected = await clack.multiselect<string>({
-    message: 'Select updates to apply:',
-    options: available.map(({ value, label, hint }) =>
-      hint ? { value, label, hint } : { value, label },
-    ),
-    required: false,
-  });
+  const selected = options.nonInteractive
+    ? available.map((o) => o.value)
+    : await clack.multiselect<string>({
+        message: 'Select updates to apply:',
+        options: available.map(({ value, label, hint }) =>
+          hint ? { value, label, hint } : { value, label },
+        ),
+        required: false,
+      });
 
   if (clack.isCancel(selected) || selected.length === 0) {
     clack.cancel('No updates applied.');

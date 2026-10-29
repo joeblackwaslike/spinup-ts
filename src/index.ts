@@ -21,7 +21,8 @@ Usage:
   spinup-ts --update [dir]           Alias for \`update\`
 
 Options:
-  -y, --yes, --non-interactive       Scaffold with defaults only, no prompts (needs <project-name>)
+  -y, --yes, --non-interactive       Scaffold with defaults only, no prompts (needs <project-name>);
+                                     with update, apply every available update without prompting
   -v, --version                      Print version
   -h, --help                         Show this help
 
@@ -85,8 +86,8 @@ async function runCreate(projectName: string | undefined, nonInteractive: boolea
   clack.outro(`Project created at ${destDir}`);
 }
 
-async function runUpdate(targetDir: string): Promise<void> {
-  await updateProject(path.resolve(targetDir));
+async function runUpdate(targetDir: string, nonInteractive: boolean): Promise<void> {
+  await updateProject(path.resolve(targetDir), { nonInteractive });
 }
 
 async function main(): Promise<void> {
@@ -103,7 +104,7 @@ async function main(): Promise<void> {
   }
 
   if (args.command === 'update') {
-    await runUpdate(args.dir ?? '.');
+    await runUpdate(args.dir ?? '.', args.nonInteractive);
     return;
   }
 

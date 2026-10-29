@@ -34,7 +34,7 @@ The RC file approach (option 3) is the recommended pattern.
 
   // Node + package manager
   nodeVersion?: "20" | "22" | "23";        // default: "22"
-  packageManager?: "pnpm" | "bun" | "npm"; // default: "pnpm"
+  packageManager?: "pnpm" | "bun" | "npm"; // legacy; always resolves to "pnpm"
 
   // Project shape
   projectType?: "library" | "cli" | "server" | "mcp-server"; // default: "library"
@@ -233,6 +233,6 @@ The docs site is in a pnpm workspace at `docs/`. The root `pnpm-workspace.yaml` 
 | Running without an RC file | Write `~/.spinup-tsrc.json` first |
 | Scaffolding into a non-empty directory | The CLI will warn — confirm intentional overwrite |
 | Forgetting `pnpm install` after scaffold | Always run `pnpm install` before building/testing |
-| `npm link` pointing to old path | Re-run `npm link` from the project root after any folder move |
+| `pnpm link --global` pointing to old path | Re-run `pnpm link --global` from the project root after any folder move |
 | ESLint `max-lines-per-function` errors | Extract helper functions; the 80-line limit is enforced in pre-commit |
 | Docusaurus build fails on first run | Run `pnpm --filter docs build` from project root; check TypeDoc source paths |

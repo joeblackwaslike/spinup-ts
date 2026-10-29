@@ -18,7 +18,7 @@ TypeScript project scaffolding CLI — the TypeScript sibling of [`spinup-py`](h
 
 - `spinup-ts [new] <name>` — scaffold (interactive)
 - `spinup-ts update [dir]` / `spinup-ts --update [dir]` — retrofit an existing repo
-- `--non-interactive` / `--yes` / `-y` — scaffold with defaults only, no prompts
+- `--non-interactive` / `--yes` / `-y` — scaffold with defaults only, no prompts; with `update`, apply every available update (including the pnpm + Bun toolchain migration)
 - `--version` / `-v`, `--help` / `-h`
 
 ## Key Files
@@ -27,12 +27,17 @@ TypeScript project scaffolding CLI — the TypeScript sibling of [`spinup-py`](h
 - `src/prompts.ts` — interactive prompts + `buildDefaultConfig` (non-interactive); reads `~/.spinup-tsrc.json` for defaults
 - `src/scaffold.ts` — degit + post-scaffold setup; template source is `joeblackwaslike/spinup-ts/template`. `SPINUP_TS_SKIP_INSTALL=1` skips the generated project's dependency install (used by the CI pack smoke test)
 - `src/update.ts` — `update` mode for retrofitting existing repos
+- `src/migrate.ts` — toolchain migration (npm/yarn -> pnpm, npx/tsx -> bunx/bun, removes old lockfiles and `node_modules`); used by `update`
 - `src/types.ts` — Zod schemas: `ProjectConfig`, `UserDefaults`
 - `template/` — the scaffolded project template
 
 ## Local Dev
 
-Run `npm link` after any folder move to keep the global `spinup-ts` symlink current.
+Run `pnpm link --global` after any folder move to keep the global `spinup-ts` symlink current.
+
+## Toolchain
+
+pnpm manages dependencies; Bun is the runtime for dev scripts (`bun`, `bunx`; never `npm`, `npx`, `yarn` or `tsx`). Run every command from the repo root. The published CLI still runs on Node (`engines.node`) because it ships to npm; the Node matrix in CI stays.
 
 ## User Defaults
 
