@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.2...spinup-ts-v0.4.3) (2026-10-29)
+
+
+### Bug Fixes
+
+* **migrate:** set up pnpm and Bun in every workflow job, switch setup-node cache to pnpm ([#19](https://github.com/joeblackwaslike/spinup-ts/issues/19)) ([c123c63](https://github.com/joeblackwaslike/spinup-ts/commit/c123c63d9ec3cce53ebb7784201fffff762040f8))
+
 ## [0.4.2](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.1...spinup-ts-v0.4.2) (2026-10-29)
 
 
