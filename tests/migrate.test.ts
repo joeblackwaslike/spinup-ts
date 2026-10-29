@@ -45,6 +45,14 @@ describe('rewriteCommands', () => {
     expect(rewriteCommands('tsx scripts/x.ts')).toBe('bun scripts/x.ts');
     expect(rewriteCommands('npm ci')).toBe('pnpm install --frozen-lockfile');
   });
+
+  it('keeps yarn install and rewrites npx tsx to a single bun', () => {
+    expect(rewriteCommands('yarn install --frozen-lockfile')).toBe(
+      'pnpm install --frozen-lockfile',
+    );
+    expect(rewriteCommands('yarn add zod')).toBe('pnpm add zod');
+    expect(rewriteCommands('npx tsx script.ts')).toBe('bun script.ts');
+  });
 });
 
 describe('addSetupBun', () => {
@@ -84,5 +92,22 @@ describe('migrateToolchain', () => {
     expect(await fse.readFile(path.join(dir, '.bun-version'), 'utf8')).toMatch(/^\d+\.\d+\.\d+/);
     expect(report.manual.some((m) => m.startsWith('README.md'))).toBe(true);
     expect(await needsToolchainMigration(dir)).toBe(false);
+  });
+});
+
+describe('migrateToolchain edge cases', () => {
+  it('needsToolchainMigration is false when there is no package.json', async () => {
+    const dir = await fse.mkdtemp(path.join(os.tmpdir(), 'spinup-empty-'));
+    dirs.push(dir);
+    expect(await needsToolchainMigration(dir)).toBe(false);
+  });
+
+  it('leaves workspaces in place when pnpm-workspace.yaml already exists', async () => {
+    const dir = await legacyProject();
+    await fse.writeFile(path.join(dir, 'pnpm-workspace.yaml'), "packages:\n  - 'apps/*'\n");
+    const report = await migrateToolchain(dir, { install: false });
+    const package_ = await fse.readJson(path.join(dir, 'package.json'));
+    expect(package_.workspaces).toEqual(['packages/*']);
+    expect(report.manual.some((m) => m.includes('pnpm-workspace.yaml already exists'))).toBe(true);
   });
 });

@@ -28,11 +28,13 @@ const TEXT_TARGET_DIRS = ['.husky', '.github'];
 const REVIEW_TARGETS = ['README.md', 'Dockerfile', 'docker-compose.yml', 'docs'];
 
 const COMMAND_REWRITES: [RegExp, string][] = [
+  [/\bnpx (?:-y |--yes )?tsx /g, 'bun '],
   [/\bnpx (?:-y |--yes )?/g, 'bunx '],
   [/\bnpm ci\b/g, 'pnpm install --frozen-lockfile'],
   [/\bnpm run /g, 'pnpm '],
   [/\bnpm (test|install|publish|exec)\b/g, 'pnpm $1'],
-  [/\byarn (?:run |install\b)?/g, 'pnpm '],
+  [/\byarn run /g, 'pnpm '],
+  [/\byarn (?=\S)/g, 'pnpm '],
   [/\btsx watch /g, 'bun --watch '],
   [/(^|[\s&|;(])tsx /g, '$1bun '],
 ];
@@ -109,17 +111,23 @@ async function migrateWorkspace(
   report: MigrationReport,
 ): Promise<void> {
   const workspaceFile = path.join(dir, WORKSPACE_FILE);
-  if (!(await fs.pathExists(workspaceFile))) {
-    const builds = package_.pnpm?.onlyBuiltDependencies ?? [];
-    await fs.writeFile(
-      workspaceFile,
-      renderWorkspaceYaml(workspacePackages(package_), builds),
-      'utf8',
-    );
-    report.changes.push(
-      `${WORKSPACE_FILE}: created from package.json workspaces/onlyBuiltDependencies`,
-    );
+  if (await fs.pathExists(workspaceFile)) {
+    if (package_.workspaces || package_.pnpm?.onlyBuiltDependencies) {
+      report.manual.push(
+        `${PKG}: workspaces/onlyBuiltDependencies left in place because ${WORKSPACE_FILE} already exists -- merge them by hand`,
+      );
+    }
+    return;
   }
+  const builds = package_.pnpm?.onlyBuiltDependencies ?? [];
+  await fs.writeFile(
+    workspaceFile,
+    renderWorkspaceYaml(workspacePackages(package_), builds),
+    'utf8',
+  );
+  report.changes.push(
+    `${WORKSPACE_FILE}: created from package.json workspaces/onlyBuiltDependencies`,
+  );
   if (package_.workspaces) {
     Reflect.deleteProperty(package_, 'workspaces');
     report.changes.push('package.json: removed "workspaces" (pnpm-workspace.yaml owns it)');
@@ -241,6 +249,7 @@ export async function migrateToolchain(
 }
 
 export async function needsToolchainMigration(dir: string): Promise<boolean> {
+  if (!(await fs.pathExists(path.join(dir, PKG)))) return false;
   const package_ = (await fs.readJson(path.join(dir, PKG))) as PackageJson;
   const foreignLock = await Promise.all(
     FOREIGN_LOCKFILES.map((name) => fs.pathExists(path.join(dir, name))),
