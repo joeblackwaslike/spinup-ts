@@ -160,3 +160,88 @@ describe('package.json indentation', () => {
     expect(raw).toContain('"test": "pnpm test"');
   });
 });
+
+describe('workflow edge cases', () => {
+  it('switches quoted npm caches and raises old Node versions for pnpm', () => {
+    const input =
+      'steps:\n  - uses: actions/setup-node@v4\n    with:\n      node-version: "20"\n      cache: \'npm\'\n  - run: pnpm install\n';
+    const output = addSetupPnpm(input);
+    expect(output).toContain('node-version: "22"');
+    expect(output).toContain("cache: 'pnpm'");
+  });
+
+  it('does not add a second pnpm setup when the job already has one after setup-node', () => {
+    const input =
+      'jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v4\n      - uses: pnpm/action-setup@v4\n      - run: pnpm test\n';
+    const output = addSetupPnpm(input);
+    expect(output.match(/pnpm\/action-setup/g)).toHaveLength(1);
+    expect(addSetupBun(output).match(/setup-bun/g)).toHaveLength(1);
+  });
+
+  it('still adds setup to each job that lacks it', () => {
+    const input =
+      'jobs:\n  a:\n    steps:\n      - uses: actions/setup-node@v4\n      - run: pnpm test\n  b:\n    steps:\n      - uses: actions/setup-node@v4\n      - run: pnpm build\n';
+    expect(addSetupPnpm(input).match(/pnpm\/action-setup/g)).toHaveLength(2);
+  });
+
+  it('drops a pinned pnpm action version that conflicts with packageManager', () => {
+    const input =
+      'steps:\n  - uses: pnpm/action-setup@v4\n    with:\n      version: 11\n  - uses: actions/setup-node@v4\n  - run: pnpm test\n';
+    const output = addSetupPnpm(input);
+    expect(output).not.toContain('version: 11');
+    expect(output).not.toContain('with:\n  - uses: actions/setup-node');
+  });
+
+  it('keeps other pnpm action inputs when dropping the version', () => {
+    const input =
+      'steps:\n  - uses: pnpm/action-setup@v4\n    with:\n      version: 11\n      run_install: false\n  - run: pnpm test\n';
+    const output = addSetupPnpm(input);
+    expect(output).toContain('run_install: false');
+    expect(output).not.toContain('version: 11');
+  });
+});
+
+describe('build placeholders and nested apps', () => {
+  it('resolves allowBuilds placeholders even without installing', async () => {
+    const dir = await legacyProject();
+    await fse.writeFile(
+      path.join(dir, 'pnpm-workspace.yaml'),
+      'allowBuilds:\n  esbuild: set this to true or false\n  core-js: set this to true or false\n',
+    );
+    await migrateToolchain(dir, { install: false });
+    const yaml = await fse.readFile(path.join(dir, 'pnpm-workspace.yaml'), 'utf8');
+    expect(yaml).toContain('esbuild: true');
+    expect(yaml).toContain('core-js: false');
+  });
+
+  it('builds a root workspace over nested apps that have no root package.json', async () => {
+    const dir = await fse.mkdtemp(path.join(os.tmpdir(), 'spinup-nested-'));
+    dirs.push(dir);
+    for (const app of ['platform/ui', 'platform/dashboard']) {
+      await fse.outputJson(path.join(dir, app, 'package.json'), {
+        name: path.basename(app),
+        scripts: { build: 'npm run compile' },
+      });
+      await fse.outputFile(path.join(dir, app, 'package-lock.json'), '{}');
+    }
+    expect(await needsToolchainMigration(dir)).toBe(true);
+    const report = await migrateToolchain(dir, { install: false });
+    const root = await fse.readJson(path.join(dir, 'package.json'));
+    expect(root.private).toBe(true);
+    expect(root.packageManager).toMatch(/^pnpm@/);
+    const yaml = await fse.readFile(path.join(dir, 'pnpm-workspace.yaml'), 'utf8');
+    expect(yaml).toContain('platform/dashboard');
+    expect(yaml).toContain('platform/ui');
+    expect(await fse.pathExists(path.join(dir, 'platform/ui/package-lock.json'))).toBe(false);
+    expect((await fse.readJson(path.join(dir, 'platform/ui/package.json'))).scripts.build).toBe(
+      'pnpm compile',
+    );
+    expect(report.manual.some((m) => m.includes('re-resolved'))).toBe(true);
+  });
+
+  it('does nothing when there is no package.json anywhere', async () => {
+    const dir = await fse.mkdtemp(path.join(os.tmpdir(), 'spinup-none-'));
+    dirs.push(dir);
+    expect(await migrateToolchain(dir, { install: false })).toEqual({ changes: [], manual: [] });
+  });
+});

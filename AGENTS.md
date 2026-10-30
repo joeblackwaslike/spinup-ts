@@ -28,6 +28,7 @@ TypeScript project scaffolding CLI — the TypeScript sibling of [`spinup-py`](h
 - `src/scaffold.ts` — degit + post-scaffold setup; template source is `joeblackwaslike/spinup-ts/template`. `SPINUP_TS_SKIP_INSTALL=1` skips the generated project's dependency install (used by the CI pack smoke test)
 - `src/update.ts` — `update` mode for retrofitting existing repos
 - `src/migrate.ts` — toolchain migration (npm/yarn -> pnpm, npx/tsx -> bunx/bun, removes old lockfiles and `node_modules`); used by `update`
+- `src/workflows.ts` — GitHub Actions rewrites used by the migration (pnpm/Bun setup steps, Node floor, cache, pinned pnpm version)
 - `src/types.ts` — Zod schemas: `ProjectConfig`, `UserDefaults`
 - `template/` — the scaffolded project template
 
