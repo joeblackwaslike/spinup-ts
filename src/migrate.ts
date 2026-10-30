@@ -2,12 +2,16 @@ import { exec } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import fs from 'fs-extra';
+// eslint-disable-next-line import-x/no-unresolved
+import { BUN_VERSION_FILE, addSetupBun, addSetupPnpm } from './workflows.js';
+
+// eslint-disable-next-line import-x/no-unresolved
+export { addSetupBun, addSetupPnpm } from './workflows.js';
 
 const execAsync = promisify(exec);
 
 const PKG = 'package.json';
 const WORKSPACE_FILE = 'pnpm-workspace.yaml';
-const BUN_VERSION_FILE = '.bun-version';
 const DEFAULT_BUN_VERSION = '1.4.4';
 
 const FOREIGN_LOCKFILES = [
@@ -178,48 +182,6 @@ async function listTextFiles(dir: string): Promise<string[]> {
   return [...named.filter((_, index) => existing[index]), ...nested.flat()];
 }
 
-const LOOKBEHIND_CHARS = 400;
-const SETUP_NODE_STEP = /^([ \t]*)- (?:name: [^\n]*\n[ \t]*)?uses: actions\/setup-node/gm;
-const SETUP_PNPM_STEP = /^([ \t]*)- (?:name: [^\n]*\n[ \t]*)?uses: pnpm\/action-setup/gm;
-
-function insertBeforeEach(
-  text: string,
-  pattern: RegExp,
-  marker: string,
-  step: (indent: string) => string,
-): string {
-  let result = '';
-  let last = 0;
-  for (const match of text.matchAll(pattern)) {
-    const before = text.slice(Math.max(0, match.index - LOOKBEHIND_CHARS), match.index);
-    result += text.slice(last, match.index);
-    if (!before.includes(marker)) result += step(match[1] ?? '');
-    last = match.index;
-  }
-  return result + text.slice(last);
-}
-
-export function addSetupPnpm(text: string): string {
-  if (!/\bpnpm\b/.test(text)) return text;
-  const withSetup = insertBeforeEach(
-    text,
-    SETUP_NODE_STEP,
-    'pnpm/action-setup',
-    (indent) => `${indent}- uses: pnpm/action-setup@v4\n\n`,
-  );
-  return withSetup.replaceAll(/^( *cache: )npm$/gm, '$1pnpm');
-}
-
-export function addSetupBun(text: string): string {
-  return insertBeforeEach(
-    text,
-    SETUP_PNPM_STEP,
-    'oven-sh/setup-bun',
-    (indent) =>
-      `${indent}- uses: oven-sh/setup-bun@v2\n${indent}  with:\n${indent}    bun-version-file: ${BUN_VERSION_FILE}\n\n`,
-  );
-}
-
 async function migrateTextFiles(dir: string, report: MigrationReport): Promise<void> {
   for (const file of await listTextFiles(dir)) {
     const original = await fs.readFile(file, 'utf8');
@@ -276,7 +238,6 @@ const TRUSTED_BUILDS = new Set([
   '@parcel/watcher',
   '@swc/core',
   'bufferutil',
-  'core-js',
   'esbuild',
   'fsevents',
   'msgpackr-extract',
@@ -338,11 +299,65 @@ async function importExistingLockfile(dir: string, report: MigrationReport): Pro
   }
 }
 
+const NESTED_SKIP = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.worktrees']);
+const NESTED_MAX_DEPTH = 3;
+
+async function findNestedPackages(dir: string, depth = 0): Promise<string[]> {
+  if (depth >= NESTED_MAX_DEPTH) return [];
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const found: string[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || NESTED_SKIP.has(entry.name) || entry.name.startsWith('.')) continue;
+    const child = path.join(dir, entry.name);
+    if (await fs.pathExists(path.join(child, PKG))) found.push(entry.name);
+    else {
+      const deeper = await findNestedPackages(child, depth + 1);
+      found.push(...deeper.map((name) => path.posix.join(entry.name, name)));
+    }
+  }
+  return found.sort((a, b) => a.localeCompare(b));
+}
+
+async function createRootWorkspace(
+  dir: string,
+  nested: string[],
+  report: MigrationReport,
+): Promise<void> {
+  const name = path
+    .basename(path.resolve(dir))
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9._-]/g, '-');
+  await fs.writeJson(path.join(dir, PKG), { name, private: true }, { spaces: 2 });
+  await fs.writeFile(path.join(dir, WORKSPACE_FILE), renderWorkspaceYaml(nested, []), 'utf8');
+  report.changes.push(`${PKG}: created root workspace package for ${nested.join(', ')}`);
+  report.manual.push(
+    'nested apps had no shared lockfile -- versions were re-resolved; review the lockfile and any Docker builds that assumed per-app installs',
+  );
+  for (const sub of nested) {
+    const file = path.join(dir, sub, PKG);
+    const package_ = (await fs.readJson(file)) as PackageJson;
+    migrateScripts(package_, report);
+    await writeJsonKeepingIndent(file, package_);
+    for (const lock of FOREIGN_LOCKFILES) {
+      const target = path.join(dir, sub, lock);
+      if (await fs.pathExists(target)) {
+        await fs.remove(target);
+        report.changes.push(`removed ${path.posix.join(sub, lock)}`);
+      }
+    }
+  }
+}
+
 export async function migrateToolchain(
   dir: string,
   options: MigrateOptions = {},
 ): Promise<MigrationReport> {
   const report: MigrationReport = { changes: [], manual: [] };
+  if (!(await fs.pathExists(path.join(dir, PKG)))) {
+    const nested = await findNestedPackages(dir);
+    if (nested.length === 0) return { changes: [], manual: [] };
+    await createRootWorkspace(dir, nested, report);
+  }
   await migratePackageJson(dir, report);
   await migrateTextFiles(dir, report);
   await addBunVersion(dir, report);
@@ -351,12 +366,16 @@ export async function migrateToolchain(
   await removeForeign(dir, report);
   await collectManualReview(dir, report);
 
+  await resolveBuildPlaceholders(dir, report);
   if (install) await installDependencies(dir, report);
   return report;
 }
 
 export async function needsToolchainMigration(dir: string): Promise<boolean> {
-  if (!(await fs.pathExists(path.join(dir, PKG)))) return false;
+  if (!(await fs.pathExists(path.join(dir, PKG)))) {
+    const nested = await findNestedPackages(dir);
+    return nested.length > 0;
+  }
   const package_ = (await fs.readJson(path.join(dir, PKG))) as PackageJson;
   const foreignLock = await Promise.all(
     FOREIGN_LOCKFILES.map((name) => fs.pathExists(path.join(dir, name))),
