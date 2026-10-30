@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.3...spinup-ts-v0.4.4) (2026-10-30)
+
+
+### Bug Fixes
+
+* **migrate:** close workflow, build-script and nested-app migration gaps ([#21](https://github.com/joeblackwaslike/spinup-ts/issues/21)) ([6084d25](https://github.com/joeblackwaslike/spinup-ts/commit/6084d25dd706cfac5e7eba5f8acfaffc7bf776e8))
+
 ## [0.4.3](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.2...spinup-ts-v0.4.3) (2026-10-29)
 
 
