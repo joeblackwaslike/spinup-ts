@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node node_modules/typescript/bin/tsc",
     "dev": "bun --watch src/index.ts",
     "test": "vitest",
     "test:watch": "vitest --watch",
@@ -23,7 +23,7 @@
     "lint": "biome ci . && eslint . --max-warnings=0",
     "lint:fix": "biome check --write . && eslint --fix .",
     "format": "biome format --write .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit",
     "check": "pnpm typecheck && pnpm lint",
     "commit": "cz",
     "depcheck": "depcheck",
@@ -52,6 +52,7 @@
     "lint-staged": "^15.5.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
+    "typescript7": "npm:typescript@^7.0.2",
     "@docusaurus/core": "^3.8.0",
     "@docusaurus/preset-classic": "^3.8.0",
     "@docusaurus/types": "^3.8.0",
