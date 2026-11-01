@@ -7,10 +7,7 @@ if [ -z "$base" ] || ! git diff --quiet "$base"...HEAD -- eslint.config.mjs tsco
   exit 0
 fi
 
-# ponytail: lints changed files only; a type change can surface typed-rule errors in an
-# unchanged file, which CI's full `eslint .` still catches.
-files=$(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.mts' '*.cts' '*.js' '*.mjs' '*.cjs')
-if [ -n "$files" ]; then
-  # shellcheck disable=SC2086
-  pnpm exec eslint --max-warnings=0 --no-warn-ignored $files
-fi
+# ponytail: with no config change, lints only files changed since the merge-base; a type
+# change can surface typed-rule errors in an unchanged file, which CI's full `eslint .` catches.
+git diff -z --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' |
+  xargs -0 -r pnpm exec eslint --max-warnings=0 --no-warn-ignored
