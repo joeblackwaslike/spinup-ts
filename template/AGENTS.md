@@ -18,7 +18,7 @@ pnpm test:coverage   # tests with coverage
 pnpm lint            # Biome + ESLint
 pnpm lint:fix        # autofix lint issues
 pnpm format          # Biome formatter
-pnpm typecheck       # tsc --noEmit
+pnpm typecheck       # tsc --noEmit on TypeScript 7 (`typescript7` alias; `typescript` stays 5.x for ESLint)
 pnpm check           # typecheck + lint
 ```
 
