@@ -11,7 +11,7 @@ TypeScript project scaffolding CLI — the TypeScript sibling of [`spinup-py`](h
 |`pnpm test`|Vitest|
 |`pnpm test:coverage`|Coverage report|
 |`pnpm lint`|Biome + ESLint|
-|`pnpm typecheck`|`tsc --noEmit`|
+|`pnpm typecheck`|`tsc --noEmit` on TypeScript 7 (`typescript7` alias; `typescript` stays 5.x because typescript-eslint loads it)|
 |`pnpm check`|lint + typecheck together|
 
 ## CLI Schema (must mirror spinup-py)
