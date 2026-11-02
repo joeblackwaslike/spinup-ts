@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.5](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.4...spinup-ts-v0.4.5) (2026-11-02)
+
+
+### Bug Fixes
+
+* **hooks:** wrap hooks.json events in a top-level hooks key ([#27](https://github.com/joeblackwaslike/spinup-ts/issues/27)) ([6cde178](https://github.com/joeblackwaslike/spinup-ts/commit/6cde178a6c405ab8630512329b5f9f84dca2a613))
+
+
+### Performance Improvements
+
+* speed up CI, pre-push, and typecheck with side-by-side TypeScript 7 ([#24](https://github.com/joeblackwaslike/spinup-ts/issues/24)) ([23e2168](https://github.com/joeblackwaslike/spinup-ts/commit/23e2168ecc1b0cdcf03daed171d49bb0629ed11f))
+
 ## [0.4.4](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.3...spinup-ts-v0.4.4) (2026-10-30)
 
 
