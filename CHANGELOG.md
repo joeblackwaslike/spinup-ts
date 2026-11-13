@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.5](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.4...spinup-ts-v0.4.5) (2026-11-13)
+
+
+### Bug Fixes
+
+* **hooks:** wrap hooks.json events in a top-level hooks key ([#27](https://github.com/joeblackwaslike/spinup-ts/issues/27)) ([6cde178](https://github.com/joeblackwaslike/spinup-ts/commit/6cde178a6c405ab8630512329b5f9f84dca2a613))
+* replace install-cli SessionStart hook with lazy CLI check in /new ([#28](https://github.com/joeblackwaslike/spinup-ts/issues/28)) ([9ce764d](https://github.com/joeblackwaslike/spinup-ts/commit/9ce764dbe0ac3e78023cb471461435ef54e8266c))
+
+
+### Performance Improvements
+
+* speed up CI, pre-push, and typecheck with side-by-side TypeScript 7 ([#24](https://github.com/joeblackwaslike/spinup-ts/issues/24)) ([23e2168](https://github.com/joeblackwaslike/spinup-ts/commit/23e2168ecc1b0cdcf03daed171d49bb0629ed11f))
+
 ## [0.4.4](https://github.com/joeblackwaslike/spinup-ts/compare/spinup-ts-v0.4.3...spinup-ts-v0.4.4) (2026-10-30)
 
 
