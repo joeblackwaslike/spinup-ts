@@ -12,6 +12,17 @@ allowed-tools:
 
 Scaffold a new TypeScript project by collecting configuration through chat, then calling the scaffold engine directly. This bypasses the interactive CLI entirely — no TTY, no expect scripts.
 
+## Step 0 — Ensure the CLI
+
+If `command -v spinup-ts` finds nothing, tell the user you are about to install it globally with `npm i -g spinup-ts` before running the block below.
+
+```bash
+command -v spinup-ts >/dev/null || npm i -g spinup-ts
+command -v spinup-ts
+```
+
+If the second line prints nothing, stop and show the install error to the user. If the error is `EACCES` (a root-owned global npm prefix), tell them to point npm at a user-writable prefix (`npm config set prefix ~/.npm-global`, then add `~/.npm-global/bin` to `PATH`) and re-run.
+
 ## Step 1 — Collect Configuration
 
 **Project name:** Use the argument if provided. If not, ask:
@@ -31,7 +42,7 @@ If the user wants to change anything, ask which fields. Otherwise proceed.
 For any field missing from the RC file, use these fallbacks:
 
 | Field | Fallback |
-|---|---|
+| --- | --- |
 | `nodeVersion` | `"22"` |
 | `packageManager` | `"pnpm"` |
 | `projectType` | `"library"` |
@@ -125,6 +136,7 @@ gh repo create <githubHandle>/<project-name> --<public|private> --source=. --rem
 ## Step 5 — Summary
 
 Report:
+
 - Full path to the new project
 - GitHub URL (if pushed)
 - Suggested next steps: `cd <project-name>` · `<pm> dev` · `<pm> test`
