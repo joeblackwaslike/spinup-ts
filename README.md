@@ -71,7 +71,7 @@ Non-interactive defaults resolve from `~/.spinup-tsrc.json`, then local `git con
 - **Description** — one-liner
 - **Author / Email / GitHub handle**
 - **Node version** — 20, 22, 23 (written to `.tool-versions` for mise/asdf)
-- **Package manager** — pnpm (default), bun, npm
+- **Toolchain** — pnpm for dependencies, Bun as the runtime (`bun`/`bunx`), all commands from the repo root
 - **Project type** — library, cli, server, mcp-server
 - **GitHub Actions** — CI + release workflows
 - **Publish to npm** — with provenance
