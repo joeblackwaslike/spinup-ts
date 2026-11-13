@@ -19,7 +19,7 @@ command -v spinup-ts >/dev/null || npm i -g spinup-ts
 command -v spinup-ts
 ```
 
-If the second line prints nothing, stop and show the install error to the user.
+If the second line prints nothing, stop and show the install error to the user. If the error is `EACCES` (a root-owned global npm prefix), tell them to point npm at a user-writable prefix (`npm config set prefix ~/.npm-global`, then add `~/.npm-global/bin` to `PATH`) and re-run.
 
 ## Step 1 — Collect Configuration
 
