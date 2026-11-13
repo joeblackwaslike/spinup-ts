@@ -14,6 +14,8 @@ Scaffold a new TypeScript project by collecting configuration through chat, then
 
 ## Step 0 — Ensure the CLI
 
+If `command -v spinup-ts` finds nothing, tell the user you are about to install it globally with `npm i -g spinup-ts` before running the block below.
+
 ```bash
 command -v spinup-ts >/dev/null || npm i -g spinup-ts
 command -v spinup-ts
