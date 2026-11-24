@@ -159,15 +159,15 @@ pnpm link --global   # if this is a CLI or tool being developed
 
 ## No Matching Project Type
 
-The types are library | cli | server | mcp-server. For a framework with its own template (Obsidian plugin, VS Code extension, Chrome extension, bot), still scaffold with spinup-ts. Pick the closest type (library for plugins and extensions, server for long-running bots), then add the framework's manifest, bundler config and dependency on top. Keep the generated lint, test, CI and release tooling. A handoff that names the framework's own template (such as the Obsidian sample plugin) does not replace the scaffold. Copy only the framework-specific files from it (manifest, bundler config, plugin source) and never overwrite the generated lint, test, CI or release config.
+The types are library | cli | server | mcp-server. For a framework with its own template (Obsidian plugin, VS Code extension, Chrome extension, bot), still scaffold with spinup-ts. Pick the closest type (library for plugins and extensions, server for long-running bots), then add the framework's manifest, bundler config and dependency on top. Keep the generated lint, test, CI and release tooling. A handoff that names the framework's own template (such as the Obsidian sample plugin) does not replace the scaffold. Copy only the framework-specific files from it (manifest, bundler config, plugin source) and never overwrite the generated lint, test or CI config. Adjust the generated release config only where the framework's release format requires it, as in step 5 below.
 
 Worked example, Obsidian plugin:
 
-1. Set `"projectType": "library"` in `~/.spinup-tsrc.json`, then run `spinup-ts my-plugin --non-interactive`.
+1. Run `spinup-ts my-plugin --non-interactive`. Without a `projectType` in `~/.spinup-tsrc.json` it defaults to `library`, so leave the global RC file alone; if it names another type, use the interactive flow for this run.
 2. Add `manifest.json` and `versions.json`; keep their versions in sync with `package.json` (for example through `extra-files` in `.github/release-please-config.json`).
 3. Add `src/main.ts`, make `build` run esbuild (`esbuild.config.mjs`) to produce `main.js`, and keep `tsc --noEmit` for typechecking.
 4. Add `obsidian` as a devDependency.
-5. Obsidian expects the release tag to equal the manifest version, so set `include-v-in-tag: false` in `.github/release-please-config.json`. Turn off the npm `publish` job in `.github/workflows/release-please.yml` and add a job gated on `release_created` that runs `gh release upload` for `main.js`, `manifest.json` and `styles.css`.
+5. This step is the permitted exception to keeping the generated release config. Obsidian expects the release tag to equal the manifest version, so set `include-v-in-tag: false` in `.github/release-please-config.json`. Turn off the npm `publish` job in `.github/workflows/release-please.yml` and add a job gated on `release_created` that runs `gh release upload` for `main.js`, `manifest.json` and `styles.css`.
 
 ## Updating an Existing Project
 
