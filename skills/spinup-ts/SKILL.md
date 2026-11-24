@@ -157,6 +157,18 @@ gh repo create joeblackwaslike/my-project --public --source=. --remote=origin --
 pnpm link --global   # if this is a CLI or tool being developed
 ```
 
+## No Matching Project Type
+
+The types are library | cli | server | mcp-server. For a framework with its own template (Obsidian plugin, VS Code extension, Chrome extension, bot), still scaffold with spinup-ts. Pick the closest type (library for plugins and extensions, server for long-running bots), then add the framework's manifest, bundler config and dependency on top. Keep the generated lint, test, CI and release tooling. A handoff that names the framework's own template (such as the Obsidian sample plugin) does not replace the scaffold. Copy only the framework-specific files from it (manifest, bundler config, plugin source) and never overwrite the generated lint, test, CI or release config.
+
+Worked example, Obsidian plugin:
+
+1. Set `"projectType": "library"` in `~/.spinup-tsrc.json`, then run `spinup-ts my-plugin --non-interactive`.
+2. Add `manifest.json` and `versions.json`; keep their versions in sync with `package.json` (for example through `extra-files` in `.github/release-please-config.json`).
+3. Add `src/main.ts`, make `build` run esbuild (`esbuild.config.mjs`) to produce `main.js`, and keep `tsc --noEmit` for typechecking.
+4. Add `obsidian` as a devDependency.
+5. Obsidian expects the release tag to equal the manifest version, so set `include-v-in-tag: false` in `.github/release-please-config.json`. Turn off the npm `publish` job in `.github/workflows/release-please.yml` and add a job gated on `release_created` that runs `gh release upload` for `main.js`, `manifest.json` and `styles.css`.
+
 ## Updating an Existing Project
 
 Add tooling to a repo that was not scaffolded with `spinup-ts`:
@@ -258,4 +270,5 @@ Stop and re-evaluate if:
 - Using `--update` on a fresh directory — use the scaffold flow instead.
 - Piping stdin to bypass prompts — `@clack/prompts` requires a real TTY; use `expect` or run interactively.
 - Adding dependencies not in the template without checking `joe-stack-preferences` first.
+- Skipping spinup-ts because no project type matches or a handoff names another template; see "No Matching Project Type".
 - Scaffolding a project and immediately starting feature work — always commit the scaffold output first.
